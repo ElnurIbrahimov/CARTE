@@ -19,8 +19,8 @@ def build_dataset(output_dir: str, max_samples: int = 100000):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("Loading sapientinc/sudoku-extreme from HuggingFace...")
-    ds = load_dataset("sapientinc/sudoku-extreme", split="train")
+    print("Loading sapientinc/sudoku-extreme from HuggingFace (streaming)...")
+    ds = load_dataset("sapientinc/sudoku-extreme", split="train", streaming=True)
 
     inputs = []
     targets = []
