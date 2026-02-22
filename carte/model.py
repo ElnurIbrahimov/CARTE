@@ -58,11 +58,8 @@ class CARTEModel(nn.Module):
         self.out_norm = RMSNorm(d_model)
         self.out_head = nn.Linear(d_model, vocab_size, bias=False)
 
-        # ACT halting head: scalar per position
-        self.q_head = nn.Sequential(
-            nn.Linear(d_model, 1),
-            nn.Sigmoid(),
-        )
+        # ACT halting head: scalar per position (returns logits, not probs)
+        self.q_head = nn.Linear(d_model, 1)
 
         # Init
         self.apply(self._init_weights)
@@ -88,7 +85,7 @@ class CARTEModel(nn.Module):
             puzzle_ids: [B] puzzle indices for learned embeddings
         Returns:
             logits: [B, S, vocab_size]
-            halt_probs: [B, S] halting probabilities from last step
+            halt_logits: [B, S] raw halt logits (pre-sigmoid)
             aux: dict with causal losses and diagnostics
         """
         B, S = input_ids.shape
@@ -124,13 +121,13 @@ class CARTEModel(nn.Module):
         # Output
         z_out = self.out_norm(z_H)
         logits = self.out_head(z_out)
-        halt_probs = self.q_head(z_out).squeeze(-1)
+        halt_logits = self.q_head(z_out).squeeze(-1)
 
         # Collect causal losses
         aux = self.causal_track.get_losses()
         aux["diagnostics"] = self.causal_track.get_diagnostics()
 
-        return logits, halt_probs, aux
+        return logits, halt_logits, aux
 
     def count_parameters(self) -> dict:
         total = sum(p.numel() for p in self.parameters())

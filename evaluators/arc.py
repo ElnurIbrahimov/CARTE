@@ -17,7 +17,7 @@ class ArcEvaluator:
         """Evaluate a single ARC task."""
         self.model.eval()
         input_ids = input_ids.unsqueeze(0).to(self.device)
-        logits, halt_probs, aux = self.model(input_ids)
+        logits, halt_logits, aux = self.model(input_ids)
 
         preds = logits.argmax(dim=-1).squeeze(0).cpu()
         target = target.cpu()

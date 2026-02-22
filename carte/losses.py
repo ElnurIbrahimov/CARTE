@@ -62,7 +62,7 @@ class CARTELoss(nn.Module):
         self,
         logits: torch.Tensor,
         targets: torch.Tensor,
-        halt_probs: torch.Tensor,
+        halt_logits: torch.Tensor,
         halt_targets: torch.Tensor,
         causal_losses: dict,
         step: int,
@@ -72,7 +72,7 @@ class CARTELoss(nn.Module):
         Args:
             logits: [B, S, V]
             targets: [B, S]
-            halt_probs: [B, S] predicted halt probability
+            halt_logits: [B, S] raw halt logits (pre-sigmoid)
             halt_targets: [B, S] binary halt targets (1 = should output here)
             causal_losses: dict with 'acyclic', 'sparse', 'ortho' tensors
             step: current training step
@@ -83,8 +83,8 @@ class CARTELoss(nn.Module):
         # Language modeling loss
         L_lm = stablemax_ce(logits, targets)
 
-        # Halt loss
-        L_halt = F.binary_cross_entropy(halt_probs, halt_targets.float())
+        # Halt loss (logits, not probs — AMP safe)
+        L_halt = F.binary_cross_entropy_with_logits(halt_logits, halt_targets.float())
 
         # Causal regularization with acyclicity ramp
         progress = step / max(total_steps, 1)

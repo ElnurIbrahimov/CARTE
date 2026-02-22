@@ -171,9 +171,9 @@ def train(cfg: dict):
 
         # Forward
         with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=bool(scaler)):
-            logits, halt_probs, aux = model(input_ids, puzzle_ids)
+            logits, halt_logits, aux = model(input_ids, puzzle_ids)
             loss, loss_dict = criterion(
-                logits, targets, halt_probs, halt_targets,
+                logits, targets, halt_logits, halt_targets,
                 aux, global_step, tc["max_steps"],
             )
             loss = loss / tc["grad_accum"]
@@ -239,9 +239,9 @@ def train(cfg: dict):
                     vtgt = vbatch["targets"].to(device)
                     vhalt = vbatch["halt_targets"].to(device)
                     vpuz = vbatch["puzzle_id"].to(device)
-                    vlogits, vhalt_probs, vaux = model(vinp, vpuz)
+                    vlogits, vhalt_logits, vaux = model(vinp, vpuz)
                     vloss, vld = criterion(
-                        vlogits, vtgt, vhalt_probs, vhalt,
+                        vlogits, vtgt, vhalt_logits, vhalt,
                         vaux, global_step, tc["max_steps"],
                     )
                     val_losses.append(vld["total"])
