@@ -93,7 +93,8 @@ class CARTEModel(nn.Module):
         # Input embedding
         input_emb = self.tok_emb(input_ids)  # [B, S, D]
         if puzzle_ids is not None:
-            puz_emb = self.puzzle_emb(puzzle_ids).unsqueeze(1)  # [B, 1, D]
+            puz_ids_clamped = puzzle_ids % self.puzzle_emb.num_embeddings
+            puz_emb = self.puzzle_emb(puz_ids_clamped).unsqueeze(1)  # [B, 1, D]
             input_emb = input_emb + puz_emb
 
         # Initialize latent spaces
