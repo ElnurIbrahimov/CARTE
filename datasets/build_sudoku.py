@@ -10,8 +10,15 @@ from pathlib import Path
 
 
 def parse_sudoku_string(s: str) -> np.ndarray:
-    """Convert '003020600...' to [0,0,3,0,2,0,6,0,0,...] array of length 81."""
-    return np.array([int(c) for c in s if c.isdigit()], dtype=np.int64)
+    """Convert '5...27..9..41...' to [5,0,0,0,2,7,0,0,9,...] array of length 81.
+    Dots represent empty cells (mapped to 0)."""
+    tokens = []
+    for c in s:
+        if c.isdigit():
+            tokens.append(int(c))
+        elif c == '.':
+            tokens.append(0)
+    return np.array(tokens, dtype=np.int64)
 
 
 def build_dataset(output_dir: str, max_samples: int = 100000):
