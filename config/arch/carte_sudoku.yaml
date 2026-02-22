@@ -1,0 +1,14 @@
+# Sudoku-specific overrides
+model:
+  vocab_size: 11  # 0-9 digits + padding
+  d_model: 512
+  n_heads: 8
+  expansion: 4
+  T: 3
+  n: 6
+  d_causal: 48
+  max_puzzles: 100000
+  max_seq_len: 81
+  dropout: 0.0
+  num_graph_layers: 2
+  edge_prior: -2.0

@@ -1,0 +1,14 @@
+# CARTE architecture config
+model:
+  vocab_size: 13  # 0-9 colors + row_sep + grid_sep + pad
+  d_model: 512
+  n_heads: 8
+  expansion: 4
+  T: 3        # outer recursion cycles
+  n: 6        # inner steps per cycle
+  d_causal: 48
+  max_puzzles: 10000
+  max_seq_len: 512
+  dropout: 0.0
+  num_graph_layers: 2
+  edge_prior: -2.0

@@ -1,0 +1,42 @@
+defaults:
+  - arch: carte
+
+# Training
+training:
+  lr: 1.0e-4
+  puzzle_lr_mult: 10.0  # puzzle embeddings at 10x lr
+  batch_size: 64
+  grad_accum: 4
+  max_steps: 50000
+  warmup_steps: 1000
+  max_grad_norm: 1.0
+  weight_decay: 0.01
+  ema_decay: 0.999
+  seed: 42
+  bf16: true
+
+# Loss weights
+loss:
+  lambda_acyclic: 1.0
+  lambda_sparse: 0.01
+  lambda_ortho: 0.1
+  halt_weight: 0.5
+  ramp_fraction: 0.3
+
+# Data
+data:
+  data_dir: data/sudoku
+  num_workers: 4
+
+# Logging
+logging:
+  wandb: false
+  wandb_project: carte
+  log_every: 50
+  eval_every: 1000
+  save_every: 5000
+
+# Checkpointing
+checkpoint:
+  save_dir: checkpoints
+  save_init: true  # Save init checkpoint for OrthoMerge
