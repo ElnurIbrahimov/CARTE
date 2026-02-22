@@ -4,6 +4,7 @@ Tokenizes digits 0-9 (0=empty), saves as memory-mapped .npy files.
 """
 
 import argparse
+import csv
 import numpy as np
 from pathlib import Path
 
@@ -14,35 +15,45 @@ def parse_sudoku_string(s: str) -> np.ndarray:
 
 
 def build_dataset(output_dir: str, max_samples: int = 100000):
-    from datasets import load_dataset
+    from huggingface_hub import hf_hub_download
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("Loading sapientinc/sudoku-extreme from HuggingFace (streaming)...")
-    ds = load_dataset("sapientinc/sudoku-extreme", split="train", streaming=True)
+    print("Downloading sapientinc/sudoku-extreme from HuggingFace...")
+    csv_path = hf_hub_download(
+        "sapientinc/sudoku-extreme", "train.csv", repo_type="dataset"
+    )
 
+    print(f"Parsing {csv_path}...")
     inputs = []
     targets = []
     count = 0
 
-    for row in ds:
-        if count >= max_samples:
-            break
+    with open(csv_path, "r") as f:
+        reader = csv.DictReader(f)
+        print(f"Columns: {reader.fieldnames}")
 
-        puzzle = row.get("puzzle") or row.get("input") or row.get("question")
-        solution = row.get("solution") or row.get("output") or row.get("answer")
+        for row in reader:
+            if count >= max_samples:
+                break
 
-        if puzzle is None or solution is None:
-            continue
+            puzzle = row.get("puzzle") or row.get("input") or row.get("question")
+            solution = row.get("solution") or row.get("output") or row.get("answer")
 
-        inp = parse_sudoku_string(str(puzzle))
-        tgt = parse_sudoku_string(str(solution))
+            if puzzle is None or solution is None:
+                continue
 
-        if len(inp) == 81 and len(tgt) == 81:
-            inputs.append(inp)
-            targets.append(tgt)
-            count += 1
+            inp = parse_sudoku_string(str(puzzle))
+            tgt = parse_sudoku_string(str(solution))
+
+            if len(inp) == 81 and len(tgt) == 81:
+                inputs.append(inp)
+                targets.append(tgt)
+                count += 1
+
+            if count % 10000 == 0 and count > 0:
+                print(f"  Processed {count} samples...")
 
     inputs = np.stack(inputs)
     targets = np.stack(targets)
